@@ -47,7 +47,7 @@ export class OTLPExporter implements SpanExporter {
 	}
 
 	send(items: any[], onSuccess: () => void, onError: (error: OTLPExporterError) => void): void {
-		const exportMessage: Uint8Array = ProtobufTraceSerializer.serializeRequest(items)
+		const exportMessage  = ProtobufTraceSerializer.serializeRequest(items);
 
 		const params: RequestInit = {
 			method: 'POST',
