@@ -52,7 +52,7 @@ export class OTLPExporter implements SpanExporter {
 		const params: RequestInit = {
 			method: 'POST',
 			headers: this.headers,
-			body,
+			body: exportMessage,
 		}
 
 		unwrap(fetch)(this.url, params)
