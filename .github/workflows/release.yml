@@ -18,29 +18,19 @@ jobs:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
+
       - uses: pnpm/action-setup@v4
+
       - name: Use Node.js 20
         uses: actions/setup-node@v4
         with:
           node-version: 20
-      - name: 'Install NPM Dependencies'
-        run: 'pnpm install --frozen-lockfile --child-concurrency=10'
-      - name: Create Release Pull Request or Publish to npm
-        id: changesets
-        uses: changesets/action@v1
-        with:
-          publish: pnpm release
+          registry-url: 'https://registry.npmjs.org/'
+
+      - name: Install NPM Dependencies
+        run: pnpm install --frozen-lockfile --child-concurrency=10
+
+      - name: Publish to npm
+        run: pnpm publish --access public --no-git-checks
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
-      - name: Update NPM Tags
-        # Changesets does not publish RC as latest. This will
-        # tag RC to latest until we get to a stable release.
-        if: steps.changesets.outputs.published == 'true'
-        env:
-          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
-        run: |
-          set -eux
-          PUBLISHED_VERSION=$(echo '${{ steps.changesets.outputs.publishedPackages }}' \
-            | jq -er '[.[] | select(.name=="@mobore/otel-cf-workers")][0].version')
-          npm dist-tag add @mobore/otel-cf-workers@${PUBLISHED_VERSION} latest
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
