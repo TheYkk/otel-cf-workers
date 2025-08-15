@@ -1,6 +1,6 @@
 import { ExportResult, ExportResultCode } from '@opentelemetry/core'
 import { OTLPExporterError } from '@opentelemetry/otlp-exporter-base'
-import { JsonTraceSerializer } from '@opentelemetry/otlp-transformer'
+import { ProtobufTraceSerializer} from '@opentelemetry/otlp-transformer'
 import { SpanExporter } from '@opentelemetry/sdk-trace-base'
 import { unwrap } from './wrap.js'
 
@@ -14,8 +14,8 @@ export interface OTLPExporterConfig {
 
 const defaultHeaders: Record<string, string> = {
 	accept: 'application/json',
-	'content-type': 'application/json',
-	'user-agent': `Cloudflare Worker @microlabs/otel-cf-workers v${versions['@microlabs/otel-cf-workers']}`,
+	'content-type': 'application/protobuf',
+	'user-agent': `Cloudflare Workers`,
 }
 
 export class OTLPExporter implements SpanExporter {
@@ -47,10 +47,8 @@ export class OTLPExporter implements SpanExporter {
 	}
 
 	send(items: any[], onSuccess: () => void, onError: (error: OTLPExporterError) => void): void {
-		const decoder = new TextDecoder()
-		const exportMessage = JsonTraceSerializer.serializeRequest(items)
+		const exportMessage: Uint8Array = ProtobufTraceSerializer.serializeRequest(items)
 
-		const body = decoder.decode(exportMessage)
 		const params: RequestInit = {
 			method: 'POST',
 			headers: this.headers,
